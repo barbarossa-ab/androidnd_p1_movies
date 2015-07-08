@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:layout_height="278dp"
+        android:layout_width="185dp"
+        android:id="@+id/movie_small_iv"
+        android:src="@drawable/interstellar_120"
+        android:adjustViewBounds="true"
+        android:layout_gravity="center"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Medium Text"
+        android:id="@+id/movie_small_text"
+        android:padding="5dp"
+        android:layout_gravity="bottom"
+        android:layout_alignBottom="@+id/movie_small_iv"
+        android:background="#ccffffff"
+        android:gravity="center_horizontal" />
+
+</RelativeLayout>

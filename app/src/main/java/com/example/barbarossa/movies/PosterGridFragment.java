@@ -2,15 +2,19 @@ package com.example.barbarossa.movies;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Movie;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -34,7 +38,19 @@ public class PosterGridFragment extends Fragment {
 
     PosterAdapter mPosterAdapter;
 
+    private static final String PREF_DISC = "pref_disc";
+    private static final String DISC_POPULAR = "popularity.desc";
+    private static final String DISC_VOTE = "vote_average.desc";
+    private static final String DISC_DEFAULT = DISC_POPULAR;
+
     public PosterGridFragment() {
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // Add this line in order for this fragment to handle menu events.
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -54,6 +70,16 @@ public class PosterGridFragment extends Fragment {
 
         GridView gridview = (GridView) rootView.findViewById(R.id.gridview);
         gridview.setAdapter(mPosterAdapter);
+
+        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+                Intent intent = new Intent(getActivity(), MovieDetailActivity.class)
+                        .putExtra(Intent.EXTRA_TEXT, Integer.toString(position));
+
+                startActivity(intent);
+            }
+        });
 
         return rootView;
     }
@@ -117,7 +143,7 @@ public class PosterGridFragment extends Fragment {
 
                 Picasso.with(mContext).load(imgUrl).fit().centerCrop().into(vh.image);
 
-//                vh.image.setImageResource(R.drawable.interstellar_120);
+//                vh.image.setImageResource(R.drawable.interstellar_poster);
             }
 
             return convertView;
@@ -137,7 +163,14 @@ public class PosterGridFragment extends Fragment {
 //        String fetchCriteria = prefs.getString(getString(R.string.pref_fetch_criteria),
 //                getString(R.string.pref_fetch_criteria_default));
 //
-        updateMoviesTask.execute("popularity.desc");
+        SharedPreferences sharedPrefs =
+                PreferenceManager.getDefaultSharedPreferences(getActivity());
+
+        String discoverCrit = sharedPrefs.getString(
+                PREF_DISC,
+                DISC_DEFAULT);
+
+        updateMoviesTask.execute(discoverCrit);
     }
 
     public class FetchMoviesTask extends AsyncTask<String, Void, Void>
@@ -238,11 +271,14 @@ public class PosterGridFragment extends Fragment {
 
             final String OWM_ID = "id";
             final String OWM_POSTER_PATH = "poster_path";
+            final String OWM_BACKDROP_PATH = "backdrop_path";
             final String OWM_TITLE = "title";
             final String OWM_OVERVIEW = "overview";
             final String OWM_RELEASE_DATE = "release_date";
             final String OWM_VOTE_AVERAGE = "vote_average";
             final String OWM_VOTE_COUNT = "vote_count";
+            final String OWM_ORIGINAL_TITLE = "original_title";
+
 
             JSONObject moviesJson = new JSONObject(moviesJsonStr);
             JSONArray moviesArray = moviesJson.getJSONArray(OWM_RESULTS);
@@ -255,11 +291,15 @@ public class PosterGridFragment extends Fragment {
 
                 md.id = movie.getString(OWM_ID);
                 md.posterPath = movie.getString(OWM_POSTER_PATH);
+                md.backdropPath = movie.getString(OWM_BACKDROP_PATH);
                 md.title = movie.getString(OWM_TITLE);
                 md.overview = movie.getString(OWM_OVERVIEW);
                 md.releaseDate = movie.getString(OWM_RELEASE_DATE);
                 md.voteAverage = movie.getString(OWM_VOTE_AVERAGE);
                 md.voteCount = movie.getString(OWM_VOTE_COUNT);
+                md.originalTitle = movie.getString(OWM_ORIGINAL_TITLE);
+                md.releaseDate = movie.getString(OWM_RELEASE_DATE);
+
 
                 MoviesDataHolder.getInstance().getMovies().add(i, md);
             }
@@ -272,6 +312,55 @@ public class PosterGridFragment extends Fragment {
         }
 
 
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        SharedPreferences sharedPrefs =
+                PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String discoverCrit = sharedPrefs.getString(
+                PREF_DISC,
+                DISC_DEFAULT);
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_show_popular) {
+            if (discoverCrit != DISC_POPULAR)
+            {
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.putString(PREF_DISC,
+                        DISC_POPULAR);
+                editor.commit();
+
+                updateMovies();
+            }
+
+            return true;
+        }
+
+        if (id == R.id.action_show_best_rated) {
+            if (discoverCrit != DISC_VOTE)
+            {
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.putString(PREF_DISC,
+                         DISC_VOTE);
+                editor.commit();
+
+
+                String pulaMea =  sharedPrefs.getString(
+                        PREF_DISC,
+                        DISC_DEFAULT);
+                updateMovies();
+            }
+
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
 

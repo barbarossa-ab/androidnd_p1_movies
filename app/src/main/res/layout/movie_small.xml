@@ -8,7 +8,7 @@
         android:layout_height="278dp"
         android:layout_width="185dp"
         android:id="@+id/movie_small_iv"
-        android:src="@drawable/interstellar_120"
+        android:src="@drawable/interstellar_poster"
         android:adjustViewBounds="true"
         android:layout_gravity="center"/>
 
@@ -21,7 +21,7 @@
         android:padding="5dp"
         android:layout_gravity="bottom"
         android:layout_alignBottom="@+id/movie_small_iv"
-        android:background="#ccffffff"
+        android:background="@android:color/holo_orange_light"
         android:gravity="center_horizontal" />
 
 </RelativeLayout>

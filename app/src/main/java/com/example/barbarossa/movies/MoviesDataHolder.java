@@ -35,11 +35,13 @@ public class MoviesDataHolder
     {
         public String id;
         public String posterPath;
+        public String backdropPath;
         public String title;
         public String overview;
         public String releaseDate;
         public String voteAverage;
         public String voteCount;
+        public String originalTitle;
     }
 
 }

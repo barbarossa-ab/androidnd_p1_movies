@@ -1,21 +1,50 @@
 package com.example.barbarossa.movies;
 
 import android.content.Intent;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 /**
  * A placeholder fragment containing a simple view.
  */
 public class MovieDetailActivityFragment extends Fragment {
 
-    final String IMG_BASE_URL = "http://image.tmdb.org/t/p/";
-    final String IMG_RES = "w780/";
+    final static String IMG_BASE_URL = "http://image.tmdb.org/t/p/";
+    final static String IMG_RES = "w185/";
 
+    String mMovieId;
+    LinearLayout mTrailersList;
+    LinearLayout mReviewsList;
+
+    private static class Trailer {
+        String id;
+        String key;
+        String name;
+        String site;
+
+        View view;
+    }
+
+    private ArrayList<Trailer> mTrailers = new ArrayList<>();
+
+//    private ArrayAdapter<String> mTrailersAdapter;
 
     public MovieDetailActivityFragment() {
     }
@@ -30,32 +59,132 @@ public class MovieDetailActivityFragment extends Fragment {
         Intent intent = getActivity().getIntent();
         if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
 
-            int movieId = Integer.parseInt(intent.getStringExtra(Intent.EXTRA_TEXT));
+            int movieIndex = Integer.parseInt(intent.getStringExtra(Intent.EXTRA_TEXT));
 
-//            MoviesDataHolder.MovieData md = MoviesDataHolder.getInstance().getMovies().get(movieId);
+            MoviesDataHolder.MovieData md = MoviesDataHolder.getInstance().getMovies().get(movieIndex);
+            mMovieId = md.id;
+
+            ImageView moviePoster = (ImageView)rootView.findViewById(R.id.movie_detail_poster);
+            TextView movieTitle = (TextView)rootView.findViewById(R.id.movie_detail_title);
+            TextView releaseDate = (TextView)rootView.findViewById(R.id.release_date_text);
+            TextView duration = (TextView) rootView.findViewById(R.id.duration_text);
+
+            TextView rating = (TextView)rootView.findViewById(R.id.rating_text);
+            TextView overview = (TextView)rootView.findViewById(R.id.overview);
+
+            mTrailersList = (LinearLayout) rootView.findViewById(R.id.trailers_list);
+            mReviewsList = (LinearLayout) rootView.findViewById(R.id.reviews_list);
+
+            String imgUrl = IMG_BASE_URL + IMG_RES + md.posterPath;
+
+            Picasso.with(getActivity()).load(imgUrl).into(moviePoster);
+
+            movieTitle.setText(md.title);
+            rating.setText(md.voteAverage + "/10");
+            overview.setText(md.overview);
+            releaseDate.setText(md.releaseDate);
+
+//            mTrailersAdapter =
+//                    new ArrayAdapter<>(
+//                            getActivity(),                  // The current context (this activity)
+//                            R.layout.movie_trailer_item,    // The name of the layout ID.
+//                            R.id.trailers_text,             // The ID of the textview to populate.
+//                            new ArrayList<String>());
+
+//            trailersList.setAdapter(mTrailersAdapter);
+//            trailersList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//                @Override
+//                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 //
-//            ImageView movieBackdrop = (ImageView)rootView.findViewById(R.id.movie_backdrop);
-//            TextView movieTitle = (TextView)rootView.findViewById(R.id.movie_title);
-//            TextView rating = (TextView)rootView.findViewById(R.id.movie_rating);
-//            TextView usersRated = (TextView)rootView.findViewById(R.id.movie_nr_users);
-//            TextView overview = (TextView)rootView.findViewById(R.id.movie_overview);
-//            TextView originalTitle = (TextView)rootView.findViewById(R.id.movie_original_title);
-//            TextView releaseDate = (TextView)rootView.findViewById(R.id.movie_release_date);
-//
-//            String imgUrl = IMG_BASE_URL + IMG_RES + md.backdropPath;
-//
-//            Picasso.with(getActivity()).load(imgUrl).into(movieBackdrop);
-//
-//            movieTitle.setText(md.title);
-//            rating.setText("Score : " + md.voteAverage);
-//            usersRated.setText("Users : " + md.voteCount);
-//            overview.setText(md.overview);
-//            originalTitle.setText("Original title : " + md.originalTitle);
-//            releaseDate.setText("Release date : " + md.releaseDate);
-//
-//            getActivity().setTitle(md.title);
+//                }
+//            });
+
+            getActivity().setTitle(md.originalTitle);
+
+            new FetchMovieTrailersTask().execute();
+
         }
 
         return rootView;
     }
+
+
+    public class FetchMovieTrailersTask extends AsyncTask<Void, Void, Void>
+    {
+        private final String LOG_TAG = FetchMovieTrailersTask.class.getSimpleName();
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            String jsonStr = Utility.makeTrailersQuery(mMovieId);
+
+            try {
+                getTrailersDataFromJson(jsonStr);
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage(), e);
+                e.printStackTrace();
+            }
+
+            Log.e(LOG_TAG, jsonStr);
+
+            return null;
+        }
+
+        private void getTrailersDataFromJson(String moviesJsonStr)
+                throws JSONException {
+
+            // These are the names of the JSON objects that need to be extracted.
+            final String OWM_RESULTS = "results";
+
+            final String OWM_ID = "id";
+            final String OWM_KEY = "key";
+            final String OWM_NAME = "name";
+            final String OWM_SITE = "site";
+
+
+            JSONObject moviesJson = new JSONObject(moviesJsonStr);
+            JSONArray moviesArray = moviesJson.getJSONArray(OWM_RESULTS);
+
+            mTrailers.clear();
+
+            for(int i = 0; i < moviesArray.length(); i++) {
+
+                Trailer trailer = new Trailer();
+                JSONObject trailerJson = moviesArray.getJSONObject(i);
+
+                trailer.id = trailerJson.getString(OWM_ID);
+                trailer.key = trailerJson.getString(OWM_KEY);
+                trailer.name = trailerJson.getString(OWM_NAME);
+                trailer.site = trailerJson.getString(OWM_SITE);
+
+                mTrailers.add(trailer);
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            if(mTrailers.size() != 0) {
+                for (Trailer t : mTrailers) {
+                    t.view = getActivity().getLayoutInflater()
+                            .inflate(R.layout.movie_trailer_item, null);
+
+                    ((TextView)((t.view).findViewById(R.id.trailers_text))).setText(t.name);
+
+                    final String key = t.key;
+
+                    t.view.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            String videoPath = "https://www.youtube.com/watch?v=" + key;
+                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(videoPath));
+                            startActivity(intent);
+                        }
+                    });
+
+                    mTrailersList.addView(t.view);
+                }
+            }
+        }
+
+    }
+
 }

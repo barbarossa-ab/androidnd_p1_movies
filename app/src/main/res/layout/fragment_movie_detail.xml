@@ -13,7 +13,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Terminator"
-            android:id="@+id/textView"
+            android:id="@+id/movie_detail_title"
             android:gravity="center_vertical"
             android:layout_alignParentLeft="true"
             android:padding="20dp"
@@ -101,24 +101,10 @@
                 android:id="@+id/trailers_title_text"/>
 
             <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="fill_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:paddingBottom="20dp"
-                android:gravity="center">
-
-                <ImageView
-                    android:src="@drawable/play_btn"
-                    android:adjustViewBounds="true"
-                    android:layout_height="32dp"
-                    android:layout_width="32dp"/>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Trailer 1"
-                    android:id="@+id/trailers_text"/>
-            </LinearLayout>
+                android:orientation="vertical"
+                android:id="@+id/trailers_list" />
 
             <View
                 android:layout_width="fill_parent"
@@ -133,12 +119,12 @@
                 android:paddingBottom="10dp"
                 android:id="@+id/reviews_title_text"/>
 
-            <TextView
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Review 1"
-                android:paddingLeft="10dp"
-                android:id="@+id/review_text"/>
+                android:orientation="vertical"
+                android:id="@+id/reviews_list" />
+
 
         </LinearLayout>
 

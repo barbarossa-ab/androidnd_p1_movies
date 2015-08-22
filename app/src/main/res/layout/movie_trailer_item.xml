@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="20dp"
+    android:gravity="center">
+
+    <ImageView
+        android:src="@drawable/play_btn"
+        android:adjustViewBounds="true"
+        android:layout_height="32dp"
+        android:layout_width="32dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Trailer 1"
+        android:id="@+id/trailers_text"/>
+</LinearLayout>

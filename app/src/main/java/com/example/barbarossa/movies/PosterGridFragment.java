@@ -185,6 +185,13 @@ public class PosterGridFragment extends Fragment {
                 return null;
             }
 
+            final String MOVIES_BASE_URL =
+                    "https://api.themoviedb.org/3/discover/movie?";
+            final String SORT_BY_PARAM = "sort_by";
+            final String API_KEY_PARAM = "api_key";
+            final String API_KEY = "bb2a38f64c6a5af584f22ef6c4ed416d";
+
+
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;
@@ -194,11 +201,6 @@ public class PosterGridFragment extends Fragment {
             String moviesJsonStr = null;
 
             try {
-                final String MOVIES_BASE_URL =
-                        "https://api.themoviedb.org/3/discover/movie?";
-                final String SORT_BY_PARAM = "sort_by";
-                final String API_KEY_PARAM = "api_key";
-                final String API_KEY = "bb2a38f64c6a5af584f22ef6c4ed416d";
 
                 Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
                         .appendQueryParameter(SORT_BY_PARAM, params[0])

@@ -1,101 +1,148 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
-<LinearLayout
-    android:orientation="vertical"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    tools:context="com.example.barbarossa.movies.MovieDetailActivityFragment">
+    android:layout_height="match_parent" >
 
-
-    <ImageView
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:src="@drawable/terminator_backdrop"
-        android:id="@+id/movie_backdrop"
-        android:layout_gravity="top"
-        android:adjustViewBounds="true"
-        />
-
-    <RelativeLayout
-        android:orientation="horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:background="@android:color/holo_orange_light">
+        android:layout_height="match_parent"
+        tools:context="com.example.barbarossa.movies.MovieDetailActivityFragment">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Terminator "
-            android:id="@+id/movie_title"
+            android:text="Terminator"
+            android:id="@+id/textView"
             android:gravity="center_vertical"
             android:layout_alignParentLeft="true"
-            android:padding="10dp"
-            android:layout_toLeftOf="@+id/movie_rating_info"
-            />
+            android:padding="20dp"
+            android:background="@android:color/holo_orange_light"
+            android:textSize="25dp" />
 
         <LinearLayout
             android:orientation="vertical"
-            android:id="@+id/movie_rating_info"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:padding="10dp">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:layout_width="161dp"
+                    android:layout_height="242dp"
+                    android:src="@drawable/interstellar_poster"
+                    android:id="@+id/movie_detail_poster"
+                    android:layout_gravity="top"
+                    android:adjustViewBounds="true"
+                    />
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingLeft="8dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2015"
+                        android:id="@+id/release_date_text"
+                        android:paddingBottom="8dp"
+                        android:textAppearance="@style/Base.TextAppearance.AppCompat.Large" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="120 min"
+                        android:id="@+id/duration_text"
+                        android:textStyle="italic"
+                        android:paddingBottom="8dp"
+                        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="8.1/10"
+                        android:id="@+id/rating_text"
+                        android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
+                        android:paddingBottom="32dp"/>
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mark as &#10;Favourite"
+                        android:id="@+id/favourite_button" />
+                </LinearLayout>
+            </LinearLayout>
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Rating : 8.0"
-                android:padding="1dp"
-                android:id="@+id/movie_rating"/>
+                android:text="Newlywed couple Ted and Tami-Lynn want to have a baby, but in order to qualify to be a parent, Ted will have to prove he's a person in a court of law."
+                android:paddingTop="10dp"
+                android:paddingLeft="5dp"
+                android:paddingBottom="20dp"
+                android:id="@+id/overview" />
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Users : 45008"
-                android:padding="1dp"
-                android:id="@+id/movie_nr_users" />
+                android:text="Trailers"
+                android:paddingTop="10dp"
+                android:id="@+id/trailers_title_text"/>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="20dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:src="@drawable/play_btn"
+                    android:adjustViewBounds="true"
+                    android:layout_height="32dp"
+                    android:layout_width="32dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Trailer 1"
+                    android:id="@+id/trailers_text"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:background="@android:color/darker_gray"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reviews"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:id="@+id/reviews_title_text"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Review 1"
+                android:paddingLeft="10dp"
+                android:id="@+id/review_text"/>
+
         </LinearLayout>
-    </RelativeLayout>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Newlywed couple Ted and Tami-Lynn want to have a baby, but in order to qualify to be a parent, Ted will have to prove he's a person in a court of law."
-        android:paddingTop="10dp"
-        android:paddingLeft="5dp"
-        android:paddingBottom="20dp"
-        android:id="@+id/movie_overview" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Original title : jakdhskjfa kjahsdkjhfa jjad"
-        android:padding="10dp"
-        android:id="@+id/movie_original_title"
-        android:background="@android:color/holo_blue_light" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Release date : 13.04.1987"
-        android:padding="10dp"
-        android:id="@+id/movie_release_date"
-        android:background="@android:color/holo_orange_light" />
 
 
-</LinearLayout>
+    </LinearLayout>
 
 </ScrollView>

@@ -29,12 +29,14 @@ import org.json.JSONObject;
 
 public class PosterGridFragment extends Fragment {
 
+    public static final String JSON_STRING_KEY = "JSON_STRING_KEY";
+
     public interface Callback {
         void onItemSelected(int movieIndex);
     }
 
-
     PosterAdapter mPosterAdapter;
+    String  mJsonString;
 
     public PosterGridFragment() {
     }
@@ -44,12 +46,16 @@ public class PosterGridFragment extends Fragment {
         super.onCreate(savedInstanceState);
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
+
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        updateMovies();
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        if(mJsonString != null) {
+            savedInstanceState.putString(JSON_STRING_KEY, mJsonString);
+        }
+        // Always call the superclass so it can save the view hierarchy state
+        super.onSaveInstanceState(savedInstanceState);
     }
 
 
@@ -75,6 +81,18 @@ public class PosterGridFragment extends Fragment {
                 ((Callback) getActivity()).onItemSelected(position);
             }
         });
+
+        if(savedInstanceState == null){
+            updateMovies();
+        } else {
+            mJsonString = savedInstanceState.getString(JSON_STRING_KEY);
+            try {
+                getMoviesDataFromJson();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            mPosterAdapter.notifyDataSetChanged();
+        }
 
         return rootView;
     }
@@ -177,69 +195,68 @@ public class PosterGridFragment extends Fragment {
                 return null;
             }
 
-            String moviesJsonStr = Utility.makeDiscoveyQuery(params[0]);
+            mJsonString = Utility.makeDiscoveyQuery(params[0]);
 
             try {
-                getMoviesDataFromJson(moviesJsonStr);
+                getMoviesDataFromJson();
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
             }
 
-            Log.e(LOG_TAG, moviesJsonStr);
+            Log.e(LOG_TAG, mJsonString);
 
             return null;
         }
-
-        private void getMoviesDataFromJson(String moviesJsonStr)
-                throws JSONException {
-
-            // These are the names of the JSON objects that need to be extracted.
-            final String OWM_RESULTS = "results";
-
-            final String OWM_ID = "id";
-            final String OWM_POSTER_PATH = "poster_path";
-            final String OWM_BACKDROP_PATH = "backdrop_path";
-            final String OWM_TITLE = "title";
-            final String OWM_OVERVIEW = "overview";
-            final String OWM_RELEASE_DATE = "release_date";
-            final String OWM_VOTE_AVERAGE = "vote_average";
-            final String OWM_VOTE_COUNT = "vote_count";
-            final String OWM_ORIGINAL_TITLE = "original_title";
-
-
-            JSONObject moviesJson = new JSONObject(moviesJsonStr);
-            JSONArray moviesArray = moviesJson.getJSONArray(OWM_RESULTS);
-
-            MoviesDataHolder.init(moviesArray.length());
-
-            for(int i = 0; i < moviesArray.length(); i++) {
-                MoviesDataHolder.MovieData md = new MoviesDataHolder.MovieData();
-                JSONObject movie = moviesArray.getJSONObject(i);
-
-                md.id = movie.getString(OWM_ID);
-                md.posterPath = movie.getString(OWM_POSTER_PATH);
-                md.backdropPath = movie.getString(OWM_BACKDROP_PATH);
-                md.title = movie.getString(OWM_TITLE);
-                md.overview = movie.getString(OWM_OVERVIEW);
-                md.releaseDate = movie.getString(OWM_RELEASE_DATE);
-                md.voteAverage = movie.getString(OWM_VOTE_AVERAGE);
-                md.voteCount = movie.getString(OWM_VOTE_COUNT);
-                md.originalTitle = movie.getString(OWM_ORIGINAL_TITLE);
-                md.releaseDate = movie.getString(OWM_RELEASE_DATE);
-
-                MoviesDataHolder.getInstance().getMovies().add(i, md);
-            }
-        }
-
 
         @Override
         protected void onPostExecute(Void result) {
             mPosterAdapter.notifyDataSetChanged();
         }
 
-
     }
+
+    private void getMoviesDataFromJson()
+            throws JSONException {
+
+        // These are the names of the JSON objects that need to be extracted.
+        final String OWM_RESULTS = "results";
+
+        final String OWM_ID = "id";
+        final String OWM_POSTER_PATH = "poster_path";
+        final String OWM_BACKDROP_PATH = "backdrop_path";
+        final String OWM_TITLE = "title";
+        final String OWM_OVERVIEW = "overview";
+        final String OWM_RELEASE_DATE = "release_date";
+        final String OWM_VOTE_AVERAGE = "vote_average";
+        final String OWM_VOTE_COUNT = "vote_count";
+        final String OWM_ORIGINAL_TITLE = "original_title";
+
+
+        JSONObject moviesJson = new JSONObject(mJsonString);
+        JSONArray moviesArray = moviesJson.getJSONArray(OWM_RESULTS);
+
+        MoviesDataHolder.init(moviesArray.length());
+
+        for(int i = 0; i < moviesArray.length(); i++) {
+            MoviesDataHolder.MovieData md = new MoviesDataHolder.MovieData();
+            JSONObject movie = moviesArray.getJSONObject(i);
+
+            md.id = movie.getString(OWM_ID);
+            md.posterPath = movie.getString(OWM_POSTER_PATH);
+            md.backdropPath = movie.getString(OWM_BACKDROP_PATH);
+            md.title = movie.getString(OWM_TITLE);
+            md.overview = movie.getString(OWM_OVERVIEW);
+            md.releaseDate = movie.getString(OWM_RELEASE_DATE);
+            md.voteAverage = movie.getString(OWM_VOTE_AVERAGE);
+            md.voteCount = movie.getString(OWM_VOTE_COUNT);
+            md.originalTitle = movie.getString(OWM_ORIGINAL_TITLE);
+            md.releaseDate = movie.getString(OWM_RELEASE_DATE);
+
+            MoviesDataHolder.getInstance().getMovies().add(i, md);
+        }
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

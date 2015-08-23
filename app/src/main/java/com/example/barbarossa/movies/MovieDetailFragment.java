@@ -4,7 +4,6 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -30,16 +29,18 @@ import java.util.ArrayList;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MovieDetailActivityFragment extends Fragment {
+public class MovieDetailFragment extends Fragment {
 
     final static String IMG_BASE_URL = "http://image.tmdb.org/t/p/";
     final static String IMG_RES = "w185/";
 
-    MoviesDataHolder.MovieData mMovieData;
+    static final String DETAIL_MOVIE_INDEX = "MOVIE_INDEX";
+    public static int DEFAULT_MOVIE = 76341;
 
-//    String mMovieId;
+    MoviesDataHolder.MovieData mMovieData;
     LinearLayout mTrailersList;
     LinearLayout mReviewsList;
+    View mRootView;
 
     private static class Trailer {
         String id;
@@ -57,40 +58,50 @@ public class MovieDetailActivityFragment extends Fragment {
         View view;
     }
 
-
     private ArrayList<Trailer> mTrailers = new ArrayList<>();
     private ArrayList<Review> mReviews = new ArrayList<>();
 
 
-//    private ArrayAdapter<String> mTrailersAdapter;
-
-    public MovieDetailActivityFragment() {
+    public MovieDetailFragment() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
-        View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
+        mRootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
 
         // The detail Activity called via intent.  Inspect the intent for forecast data.
-        Intent intent = getActivity().getIntent();
-        if (intent != null && intent.hasExtra(Intent.EXTRA_TEXT)) {
+        Bundle arguments = getArguments();
+        int movieIndex = -1;
 
-            int movieIndex = Integer.parseInt(intent.getStringExtra(Intent.EXTRA_TEXT));
+        if (arguments != null) {
+            movieIndex = arguments.getInt(MovieDetailFragment.DETAIL_MOVIE_INDEX);
+        }
 
+        updateUI( movieIndex);
+
+        return mRootView;
+    }
+
+    private void updateUI (int movieIndex) {
+        ImageView moviePoster = (ImageView)mRootView.findViewById(R.id.movie_detail_poster);
+        TextView movieTitle = (TextView)mRootView.findViewById(R.id.movie_detail_title);
+        TextView releaseDate = (TextView)mRootView.findViewById(R.id.release_date_text);
+        TextView duration = (TextView) mRootView.findViewById(R.id.duration_text);
+
+        TextView rating = (TextView)mRootView.findViewById(R.id.rating_text);
+        TextView overview = (TextView)mRootView.findViewById(R.id.overview);
+
+        mTrailersList = (LinearLayout) mRootView.findViewById(R.id.trailers_list);
+        mReviewsList = (LinearLayout) mRootView.findViewById(R.id.reviews_list);
+        Button favButton = (Button)mRootView.findViewById(R.id.favourite_button);
+
+        TextView reviewsTitle = (TextView)mRootView.findViewById(R.id.reviews_title_text);
+        TextView trailersTitle = (TextView)mRootView.findViewById(R.id.trailers_title_text);
+
+        if(movieIndex >= 0) {
             mMovieData = MoviesDataHolder.getInstance().getMovies().get(movieIndex);
-
-            ImageView moviePoster = (ImageView)rootView.findViewById(R.id.movie_detail_poster);
-            TextView movieTitle = (TextView)rootView.findViewById(R.id.movie_detail_title);
-            TextView releaseDate = (TextView)rootView.findViewById(R.id.release_date_text);
-            TextView duration = (TextView) rootView.findViewById(R.id.duration_text);
-
-            TextView rating = (TextView)rootView.findViewById(R.id.rating_text);
-            TextView overview = (TextView)rootView.findViewById(R.id.overview);
-
-            mTrailersList = (LinearLayout) rootView.findViewById(R.id.trailers_list);
-            mReviewsList = (LinearLayout) rootView.findViewById(R.id.reviews_list);
 
             String imgUrl = IMG_BASE_URL + IMG_RES + mMovieData.posterPath;
 
@@ -101,7 +112,6 @@ public class MovieDetailActivityFragment extends Fragment {
             overview.setText(mMovieData.overview);
             releaseDate.setText(mMovieData.releaseDate);
 
-            Button favButton = (Button)rootView.findViewById(R.id.favourite_button);
             favButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -114,26 +124,18 @@ public class MovieDetailActivityFragment extends Fragment {
             new FetchTrailersTask().execute();
             new FetchReviewsTask().execute();
 
-            // show all favourite movies
-            Cursor favouriteCursor = getActivity().getContentResolver().query(
-                    MoviesContract.MovieEntry.CONTENT_URI,
-                    new String[]{MoviesContract.MovieEntry.COLUMN_TITLE},
-                    null,
-                    null,
-                    null);
+        } else {
+            movieTitle.setText("No movie selected");
+            overview.setText("Select a movie from the left");
 
-//            while(favouriteCursor.moveToNext()) {
-//                Log.e("DBG", favouriteCursor.getString(0));
-//
-//            }
-
-            String cursorString = DatabaseUtils.dumpCursorToString(favouriteCursor);
-
-            Log.e("DBG", cursorString);
-
+            moviePoster.setVisibility(View.GONE);
+            releaseDate.setVisibility(View.GONE);
+            rating.setVisibility(View.GONE);
+            favButton.setVisibility(View.GONE);
+            reviewsTitle.setVisibility(View.GONE);
+            trailersTitle.setVisibility(View.GONE);
         }
 
-        return rootView;
     }
 
     public long addMovieToFavourites() {
@@ -302,22 +304,24 @@ public class MovieDetailActivityFragment extends Fragment {
         protected void onPostExecute(Void result) {
             if(mReviews.size() != 0) {
                 for (Review r : mReviews) {
-                    r.view = getActivity().getLayoutInflater()
-                            .inflate(R.layout.movie_review_item, null);
+                    if(getActivity() != null) {
+                        r.view = getActivity().getLayoutInflater()
+                                .inflate(R.layout.movie_review_item, null);
 
-                    ((TextView)((r.view).findViewById(R.id.review_text))).setText(r.author);
+                        ((TextView) ((r.view).findViewById(R.id.review_text))).setText(r.author);
 
-                    final String url = r.url;
+                        final String url = r.url;
 
-                    r.view.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                            startActivity(intent);
-                        }
-                    });
+                        r.view.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                                startActivity(intent);
+                            }
+                        });
 
-                    mReviewsList.addView(r.view);
+                        mReviewsList.addView(r.view);
+                    }
                 }
             } else {
                 mReviewsList.setVisibility(View.GONE);

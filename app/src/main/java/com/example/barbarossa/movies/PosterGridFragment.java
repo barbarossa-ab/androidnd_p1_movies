@@ -2,7 +2,6 @@ package com.example.barbarossa.movies;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -29,6 +28,11 @@ import org.json.JSONObject;
 
 
 public class PosterGridFragment extends Fragment {
+
+    public interface Callback {
+        void onItemSelected(int movieIndex);
+    }
+
 
     PosterAdapter mPosterAdapter;
 
@@ -63,10 +67,12 @@ public class PosterGridFragment extends Fragment {
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                Intent intent = new Intent(getActivity(), MovieDetailActivity.class)
-                        .putExtra(Intent.EXTRA_TEXT, Integer.toString(position));
+//                Intent intent = new Intent(getActivity(), MovieDetailActivity.class)
+//                        .putExtra(Intent.EXTRA_TEXT, Integer.toString(position));
+//
+//                startActivity(intent);
 
-                startActivity(intent);
+                ((Callback) getActivity()).onItemSelected(position);
             }
         });
 
@@ -167,7 +173,6 @@ public class PosterGridFragment extends Fragment {
 
         @Override
         protected Void doInBackground(String... params) {
-            // If there's no zip code, there's nothing to look up.  Verify size of params.
             if (params.length == 0) {
                 return null;
             }

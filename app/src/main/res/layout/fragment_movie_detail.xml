@@ -7,7 +7,7 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.example.barbarossa.movies.MovieDetailActivityFragment">
+        tools:context="com.example.barbarossa.movies.MovieDetailFragment">
 
         <TextView
             android:layout_width="match_parent"
@@ -61,6 +61,7 @@
                         android:id="@+id/duration_text"
                         android:textStyle="italic"
                         android:paddingBottom="8dp"
+                        android:visibility="gone"
                         android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
 
                     <TextView

@@ -1,6 +1,10 @@
 package com.example.barbarossa.movies;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,10 +13,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.example.barbarossa.movies.data.MoviesContract;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -29,7 +35,9 @@ public class MovieDetailActivityFragment extends Fragment {
     final static String IMG_BASE_URL = "http://image.tmdb.org/t/p/";
     final static String IMG_RES = "w185/";
 
-    String mMovieId;
+    MoviesDataHolder.MovieData mMovieData;
+
+//    String mMovieId;
     LinearLayout mTrailersList;
     LinearLayout mReviewsList;
 
@@ -71,8 +79,7 @@ public class MovieDetailActivityFragment extends Fragment {
 
             int movieIndex = Integer.parseInt(intent.getStringExtra(Intent.EXTRA_TEXT));
 
-            MoviesDataHolder.MovieData md = MoviesDataHolder.getInstance().getMovies().get(movieIndex);
-            mMovieId = md.id;
+            mMovieData = MoviesDataHolder.getInstance().getMovies().get(movieIndex);
 
             ImageView moviePoster = (ImageView)rootView.findViewById(R.id.movie_detail_poster);
             TextView movieTitle = (TextView)rootView.findViewById(R.id.movie_detail_title);
@@ -85,24 +92,86 @@ public class MovieDetailActivityFragment extends Fragment {
             mTrailersList = (LinearLayout) rootView.findViewById(R.id.trailers_list);
             mReviewsList = (LinearLayout) rootView.findViewById(R.id.reviews_list);
 
-            String imgUrl = IMG_BASE_URL + IMG_RES + md.posterPath;
+            String imgUrl = IMG_BASE_URL + IMG_RES + mMovieData.posterPath;
 
             Picasso.with(getActivity()).load(imgUrl).into(moviePoster);
 
-            movieTitle.setText(md.title);
-            rating.setText(md.voteAverage + "/10");
-            overview.setText(md.overview);
-            releaseDate.setText(md.releaseDate);
+            movieTitle.setText(mMovieData.title);
+            rating.setText(mMovieData.voteAverage + "/10");
+            overview.setText(mMovieData.overview);
+            releaseDate.setText(mMovieData.releaseDate);
 
-            getActivity().setTitle(md.originalTitle);
+            Button favButton = (Button)rootView.findViewById(R.id.favourite_button);
+            favButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    addMovieToFavourites();
+                }
+            });
+
+            getActivity().setTitle(mMovieData.originalTitle);
 
             new FetchTrailersTask().execute();
             new FetchReviewsTask().execute();
 
+            // show all favourite movies
+            Cursor favouriteCursor = getActivity().getContentResolver().query(
+                    MoviesContract.MovieEntry.CONTENT_URI,
+                    new String[]{MoviesContract.MovieEntry.COLUMN_TITLE},
+                    null,
+                    null,
+                    null);
+
+//            while(favouriteCursor.moveToNext()) {
+//                Log.e("DBG", favouriteCursor.getString(0));
+//
+//            }
+
+            String cursorString = DatabaseUtils.dumpCursorToString(favouriteCursor);
+
+            Log.e("DBG", cursorString);
 
         }
 
         return rootView;
+    }
+
+    public long addMovieToFavourites() {
+        long movieId = -1;
+
+        // First, check if the location with this city name exists in the db
+        Cursor movieCursor = getActivity().getContentResolver().query(
+                MoviesContract.MovieEntry.CONTENT_URI,
+                new String[]{MoviesContract.MovieEntry._ID},
+                MoviesContract.MovieEntry.COLUMN_API_ID + " = ?",
+                new String[]{mMovieData.id},
+                null);
+
+        if(!movieCursor.moveToFirst()) {
+            ContentValues movieValues = new ContentValues();
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_API_ID, mMovieData.id);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_TITLE, mMovieData.title);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_ORIGINAL_TITLE, mMovieData.originalTitle);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_POSTER_PATH, mMovieData.posterPath);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_OVERVIEW,mMovieData.overview);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_RELEASE_DATE, mMovieData.releaseDate);
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE, Float.parseFloat(mMovieData.voteAverage));
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_VOTE_COUNT, Integer.parseInt(mMovieData.voteCount));
+            movieValues.put(MoviesContract.MovieEntry.COLUMN_DURATION, 120);
+
+            // Finally, insert location data into the database.
+            Uri insertedUri = getActivity().getContentResolver().insert(
+                    MoviesContract.MovieEntry.CONTENT_URI,
+                    movieValues
+            );
+
+            movieId = ContentUris.parseId(insertedUri);
+        } else {
+            int movieIdIndex = movieCursor.getColumnIndex(MoviesContract.MovieEntry._ID);
+            movieId = movieCursor.getLong(movieIdIndex);
+        }
+
+        return movieId;
     }
 
 
@@ -112,7 +181,7 @@ public class MovieDetailActivityFragment extends Fragment {
 
         @Override
         protected Void doInBackground(Void... params) {
-            String jsonStr = Utility.makeDetailsQuery(mMovieId, "videos");
+            String jsonStr = Utility.makeDetailsQuery(mMovieData.id, "videos");
 
             try {
                 getTrailersDataFromJson(jsonStr);
@@ -191,7 +260,7 @@ public class MovieDetailActivityFragment extends Fragment {
 
         @Override
         protected Void doInBackground(Void... params) {
-            String jsonStr = Utility.makeDetailsQuery(mMovieId, "reviews");
+            String jsonStr = Utility.makeDetailsQuery(mMovieData.id, "reviews");
             try {
                 getReviewsDataFromJson(jsonStr);
             } catch (JSONException e) {

@@ -16,6 +16,7 @@ public class Utility {
     public static final String PREF_DISC = "pref_disc";
     public static final String DISC_POPULAR = "popularity.desc";
     public static final String DISC_VOTE = "vote_average.desc";
+    public static final String DISC_FAVOURITES = "favourites";
     public static final String DISC_DEFAULT = DISC_POPULAR;
 
 
@@ -123,4 +124,6 @@ public class Utility {
 
         return jsonStr;
     }
+
+
 }

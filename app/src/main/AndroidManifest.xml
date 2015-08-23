@@ -26,6 +26,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.barbarossa.movies.MainActivity" />
         </activity>
+
+        <provider
+            android:authorities="com.example.barbarossa.movies"
+            android:name=".data.MoviesProvider" />
+
     </application>
 
 </manifest>

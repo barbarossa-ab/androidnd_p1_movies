@@ -3,6 +3,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_show_popular">Most popular</string>
     <string name="action_show_best_rated">Best rated</string>
+    <string name="action_show_favourites">Favourites</string>
     <string name="title_activity_movie_detail">MovieDetailActivity</string>
 
     <string name="pref_discovery">discovery</string>

@@ -42,6 +42,7 @@ public class MoviesDataHolder
         public String voteAverage;
         public String voteCount;
         public String originalTitle;
+        public String duration;
     }
 
 }

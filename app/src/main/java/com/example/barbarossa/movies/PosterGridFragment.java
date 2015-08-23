@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -19,6 +20,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.barbarossa.movies.data.MoviesContract;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -144,12 +146,6 @@ public class PosterGridFragment extends Fragment {
 
 
     private void updateMovies() {
-        FetchMoviesTask updateMoviesTask = new FetchMoviesTask();
-
-//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-//        String fetchCriteria = prefs.getString(getString(R.string.pref_fetch_criteria),
-//                getString(R.string.pref_fetch_criteria_default));
-//
         SharedPreferences sharedPrefs =
                 PreferenceManager.getDefaultSharedPreferences(getActivity());
 
@@ -157,7 +153,12 @@ public class PosterGridFragment extends Fragment {
                 Utility.PREF_DISC,
                 Utility.DISC_DEFAULT);
 
-        updateMoviesTask.execute(discoverCrit);
+        if(discoverCrit.equals(Utility.DISC_FAVOURITES)) {
+            updateMoviesFromFavourites();
+        } else {
+            FetchMoviesTask updateMoviesTask = new FetchMoviesTask();
+            updateMoviesTask.execute(discoverCrit);
+        }
     }
 
     public class FetchMoviesTask extends AsyncTask<String, Void, Void>
@@ -277,8 +278,74 @@ public class PosterGridFragment extends Fragment {
             return true;
         }
 
+        if (id == R.id.action_show_favourites) {
+            if (discoverCrit != Utility.DISC_FAVOURITES)
+            {
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.putString(Utility.PREF_DISC,
+                        Utility.DISC_FAVOURITES);
+                editor.commit();
+
+                updateMovies();
+            }
+
+            return true;
+        }
+
+
         return super.onOptionsItemSelected(item);
     }
 
 
+    private void updateMoviesFromFavourites() {
+        final String[] FAVOURITES_COLUMNS = {
+                MoviesContract.MovieEntry.COLUMN_API_ID,
+                MoviesContract.MovieEntry.COLUMN_TITLE,
+                MoviesContract.MovieEntry.COLUMN_ORIGINAL_TITLE,
+                MoviesContract.MovieEntry.COLUMN_POSTER_PATH,
+                MoviesContract.MovieEntry.COLUMN_OVERVIEW,
+                MoviesContract.MovieEntry.COLUMN_RELEASE_DATE,
+                MoviesContract.MovieEntry.COLUMN_VOTE_AVERAGE,
+                MoviesContract.MovieEntry.COLUMN_VOTE_COUNT,
+                MoviesContract.MovieEntry.COLUMN_DURATION
+        };
+
+        final int COL_API_ID = 0;
+        final int COL_TITLE = 1;
+        final int COL_ORIGINAL_TITLE = 2;
+        final int COL_POSTER_PATH = 3;
+        final int COL_OVERVIEW = 4;
+        final int COL_RELEASE_DATE = 5;
+        final int COL_VOTE_AVERAGE = 6;
+        final int COL_VOTE_COUNT = 7;
+        final int COL_DURATION = 8;
+
+        // show all favourite movies
+        Cursor favouriteCursor = getActivity().getContentResolver().query(
+                MoviesContract.MovieEntry.CONTENT_URI,
+                FAVOURITES_COLUMNS,
+                null,
+                null,
+                null);
+
+        MoviesDataHolder.init(favouriteCursor.getCount());
+
+        while(favouriteCursor.moveToNext()) {
+            MoviesDataHolder.MovieData md = new MoviesDataHolder.MovieData();
+
+            md.id = Integer.toString(favouriteCursor.getInt(COL_API_ID));
+            md.title = favouriteCursor.getString(COL_TITLE);
+            md.originalTitle = favouriteCursor.getString(COL_ORIGINAL_TITLE);
+            md.posterPath = favouriteCursor.getString(COL_POSTER_PATH);
+            md.overview = favouriteCursor.getString(COL_OVERVIEW);
+            md.releaseDate = favouriteCursor.getString(COL_RELEASE_DATE);
+            md.voteAverage = Float.toString(favouriteCursor.getFloat(COL_VOTE_AVERAGE));
+            md.voteCount = Integer.toString(favouriteCursor.getInt(COL_VOTE_COUNT));
+            md.duration = Integer.toString(favouriteCursor.getInt(COL_DURATION));
+
+            MoviesDataHolder.getInstance().getMovies().add(md);
+        }
+
+        mPosterAdapter.notifyDataSetChanged();
+    }
 }

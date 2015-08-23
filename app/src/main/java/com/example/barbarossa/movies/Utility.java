@@ -13,8 +13,14 @@ import java.net.URL;
 
 public class Utility {
 
-    final public static String API_KEY_PARAM = "api_key";
-    final public static String API_KEY = "bb2a38f64c6a5af584f22ef6c4ed416d";
+    public static final String PREF_DISC = "pref_disc";
+    public static final String DISC_POPULAR = "popularity.desc";
+    public static final String DISC_VOTE = "vote_average.desc";
+    public static final String DISC_DEFAULT = DISC_POPULAR;
+
+
+    public static final String API_KEY_PARAM = "api_key";
+    public static final String API_KEY = "bb2a38f64c6a5af584f22ef6c4ed416d";
 
     final static String MOVIES_DETAIL_BASE_URL =
             "https://api.themoviedb.org/3/movie/";

@@ -4,11 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -26,22 +25,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 
 public class PosterGridFragment extends Fragment {
 
     PosterAdapter mPosterAdapter;
-
-    private static final String PREF_DISC = "pref_disc";
-    private static final String DISC_POPULAR = "popularity.desc";
-    private static final String DISC_VOTE = "vote_average.desc";
-    private static final String DISC_DEFAULT = DISC_POPULAR;
 
     public PosterGridFragment() {
     }
@@ -167,8 +154,8 @@ public class PosterGridFragment extends Fragment {
                 PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         String discoverCrit = sharedPrefs.getString(
-                PREF_DISC,
-                DISC_DEFAULT);
+                Utility.PREF_DISC,
+                Utility.DISC_DEFAULT);
 
         updateMoviesTask.execute(discoverCrit);
     }
@@ -179,79 +166,12 @@ public class PosterGridFragment extends Fragment {
 
         @Override
         protected Void doInBackground(String... params) {
-
             // If there's no zip code, there's nothing to look up.  Verify size of params.
             if (params.length == 0) {
                 return null;
             }
 
-            final String MOVIES_BASE_URL =
-                    "https://api.themoviedb.org/3/discover/movie?";
-            final String SORT_BY_PARAM = "sort_by";
-            final String API_KEY_PARAM = "api_key";
-            final String API_KEY = "bb2a38f64c6a5af584f22ef6c4ed416d";
-
-
-            // These two need to be declared outside the try/catch
-            // so that they can be closed in the finally block.
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
-            // Will contain the raw JSON response as a string.
-            String moviesJsonStr = null;
-
-            try {
-
-                Uri builtUri = Uri.parse(MOVIES_BASE_URL).buildUpon()
-                        .appendQueryParameter(SORT_BY_PARAM, params[0])
-                        .appendQueryParameter(API_KEY_PARAM, API_KEY)
-                        .build();
-
-                URL url = new URL(builtUri.toString());
-
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuffer buffer = new StringBuffer();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-                moviesJsonStr = buffer.toString();
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error ", e);
-                // If the code didn't successfully get the weather data, there's no point in attemping
-                // to parse it.
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
-            }
+            String moviesJsonStr = Utility.makeDiscoveyQuery(params[0]);
 
             try {
                 getMoviesDataFromJson(moviesJsonStr);
@@ -302,7 +222,6 @@ public class PosterGridFragment extends Fragment {
                 md.originalTitle = movie.getString(OWM_ORIGINAL_TITLE);
                 md.releaseDate = movie.getString(OWM_RELEASE_DATE);
 
-
                 MoviesDataHolder.getInstance().getMovies().add(i, md);
             }
         }
@@ -326,16 +245,16 @@ public class PosterGridFragment extends Fragment {
         SharedPreferences sharedPrefs =
                 PreferenceManager.getDefaultSharedPreferences(getActivity());
         String discoverCrit = sharedPrefs.getString(
-                PREF_DISC,
-                DISC_DEFAULT);
+                Utility.PREF_DISC,
+                Utility.DISC_DEFAULT);
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_show_popular) {
-            if (discoverCrit != DISC_POPULAR)
+            if (discoverCrit != Utility.DISC_POPULAR)
             {
                 SharedPreferences.Editor editor = sharedPrefs.edit();
-                editor.putString(PREF_DISC,
-                        DISC_POPULAR);
+                editor.putString(Utility.PREF_DISC,
+                        Utility.DISC_POPULAR);
                 editor.commit();
 
                 updateMovies();
@@ -345,17 +264,13 @@ public class PosterGridFragment extends Fragment {
         }
 
         if (id == R.id.action_show_best_rated) {
-            if (discoverCrit != DISC_VOTE)
+            if (discoverCrit != Utility.DISC_VOTE)
             {
                 SharedPreferences.Editor editor = sharedPrefs.edit();
-                editor.putString(PREF_DISC,
-                         DISC_VOTE);
+                editor.putString(Utility.PREF_DISC,
+                        Utility.DISC_VOTE);
                 editor.commit();
 
-
-                String pulaMea =  sharedPrefs.getString(
-                        PREF_DISC,
-                        DISC_DEFAULT);
                 updateMovies();
             }
 

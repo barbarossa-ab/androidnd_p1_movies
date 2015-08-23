@@ -5,6 +5,7 @@
         android:layout_height="wrap_content"
         android:text="Review 1"
         android:paddingLeft="10dp"
+        android:paddingBottom="10dp"
         android:id="@+id/review_text"/>
 
 

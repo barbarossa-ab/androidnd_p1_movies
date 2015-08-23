@@ -38,10 +38,10 @@ public class Utility {
         }
     }
 
-    public static String makeTrailersQuery(String movieId) {
-        String trailersURL = MOVIES_DETAIL_BASE_URL + movieId + "/videos";
+    public static String makeDetailsQuery(String movieId, String details) {
+        String detailsURL = MOVIES_DETAIL_BASE_URL + movieId + "/" + details;
 
-        Uri builtUri = Uri.parse(trailersURL).buildUpon()
+        Uri builtUri = Uri.parse(detailsURL).buildUpon()
                 .appendQueryParameter(Utility.API_KEY_PARAM, Utility.API_KEY)
                 .build();
         try {
@@ -50,22 +50,6 @@ public class Utility {
         } catch (MalformedURLException e) {
             return null;
         }
-    }
-
-    public static String makeReviewsQuery(int movieId) {
-        String trailersURL = MOVIES_DETAIL_BASE_URL + movieId + "/reviews";
-
-        Uri builtUri = Uri.parse(trailersURL).buildUpon()
-                .appendQueryParameter(Utility.API_KEY_PARAM, Utility.API_KEY)
-                .build();
-        try {
-            URL url = new URL(builtUri.toString());
-            return makeQuery(url);
-        } catch (MalformedURLException e) {
-            return null;
-        }
-
-
     }
 
 

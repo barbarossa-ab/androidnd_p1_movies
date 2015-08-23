@@ -42,7 +42,17 @@ public class MovieDetailActivityFragment extends Fragment {
         View view;
     }
 
+    private static class Review {
+        String author;
+        String url;
+
+        View view;
+    }
+
+
     private ArrayList<Trailer> mTrailers = new ArrayList<>();
+    private ArrayList<Review> mReviews = new ArrayList<>();
+
 
 //    private ArrayAdapter<String> mTrailersAdapter;
 
@@ -84,24 +94,11 @@ public class MovieDetailActivityFragment extends Fragment {
             overview.setText(md.overview);
             releaseDate.setText(md.releaseDate);
 
-//            mTrailersAdapter =
-//                    new ArrayAdapter<>(
-//                            getActivity(),                  // The current context (this activity)
-//                            R.layout.movie_trailer_item,    // The name of the layout ID.
-//                            R.id.trailers_text,             // The ID of the textview to populate.
-//                            new ArrayList<String>());
-
-//            trailersList.setAdapter(mTrailersAdapter);
-//            trailersList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//                @Override
-//                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-//
-//                }
-//            });
-
             getActivity().setTitle(md.originalTitle);
 
-            new FetchMovieTrailersTask().execute();
+            new FetchTrailersTask().execute();
+            new FetchReviewsTask().execute();
+
 
         }
 
@@ -109,13 +106,13 @@ public class MovieDetailActivityFragment extends Fragment {
     }
 
 
-    public class FetchMovieTrailersTask extends AsyncTask<Void, Void, Void>
+    public class FetchTrailersTask extends AsyncTask<Void, Void, Void>
     {
-        private final String LOG_TAG = FetchMovieTrailersTask.class.getSimpleName();
+        private final String LOG_TAG = FetchTrailersTask.class.getSimpleName();
 
         @Override
         protected Void doInBackground(Void... params) {
-            String jsonStr = Utility.makeTrailersQuery(mMovieId);
+            String jsonStr = Utility.makeDetailsQuery(mMovieId, "videos");
 
             try {
                 getTrailersDataFromJson(jsonStr);
@@ -182,9 +179,81 @@ public class MovieDetailActivityFragment extends Fragment {
 
                     mTrailersList.addView(t.view);
                 }
+            } else {
+                mTrailersList.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    public class FetchReviewsTask extends AsyncTask<Void, Void, Void>
+    {
+        private final String LOG_TAG = FetchReviewsTask.class.getSimpleName();
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            String jsonStr = Utility.makeDetailsQuery(mMovieId, "reviews");
+            try {
+                getReviewsDataFromJson(jsonStr);
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage(), e);
+                e.printStackTrace();
+            }
+            Log.e(LOG_TAG, jsonStr);
+
+            return null;
+        }
+
+        private void getReviewsDataFromJson(String moviesJsonStr)
+                throws JSONException {
+
+            // These are the names of the JSON objects that need to be extracted.
+            final String OWM_RESULTS = "results";
+
+            final String OWM_AUTHOR = "author";
+            final String OWM_URL = "url";
+
+            JSONObject moviesJson = new JSONObject(moviesJsonStr);
+            JSONArray moviesArray = moviesJson.getJSONArray(OWM_RESULTS);
+
+            mReviews.clear();
+
+            for(int i = 0; i < moviesArray.length(); i++) {
+
+                Review review = new Review();
+                JSONObject trailerJson = moviesArray.getJSONObject(i);
+
+                review.author = trailerJson.getString(OWM_AUTHOR);
+                review.url = trailerJson.getString(OWM_URL);
+
+                mReviews.add(review);
             }
         }
 
+        @Override
+        protected void onPostExecute(Void result) {
+            if(mReviews.size() != 0) {
+                for (Review r : mReviews) {
+                    r.view = getActivity().getLayoutInflater()
+                            .inflate(R.layout.movie_review_item, null);
+
+                    ((TextView)((r.view).findViewById(R.id.review_text))).setText(r.author);
+
+                    final String url = r.url;
+
+                    r.view.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                            startActivity(intent);
+                        }
+                    });
+
+                    mReviewsList.addView(r.view);
+                }
+            } else {
+                mReviewsList.setVisibility(View.GONE);
+            }
+        }
     }
 
 }

@@ -98,6 +98,7 @@
                 android:layout_height="wrap_content"
                 android:text="Trailers"
                 android:paddingTop="10dp"
+                android:paddingBottom="8dp"
                 android:id="@+id/trailers_title_text"/>
 
             <LinearLayout
